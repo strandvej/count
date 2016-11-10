@@ -1,0 +1,238 @@
+---
+title       : Models for Counts
+subtitle    : Poisson, Negative Binomial, Zero-Inflated
+author      : William Reed
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : mathjax            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+github:
+user: strandvej
+repo: count
+
+
+
+---
+## The Observed Value Approach for MNL
+
+> - Fit the Model to the Data
+> - Obtain the coefficients and variance covariance matrix.
+> - Simulate coefficients from multivariate normal distribution.
+> - Use observed values to calculate the probability of being in eaching 
+category.
+--- .class #id 
+
+---
+```{r, echo=FALSE, eval=TRUE} 
+require(foreign)
+require(mlogit)
+ml <- read.dta("http://www.ats.ucla.edu/stat/data/hsbdemo.dta")
+ml_1<-mlogit.data(ml,shape="wide",choice="prog")
+test <- mlogit(prog ~ 1 | ses + write,  data = ml_1, 
+               reflevel="academic", probit=FALSE)
+```
+--- 
+
+
+---
+Estimated Coefficients
+```{r}
+test
+```
+---
+
+
+---
+What can we extract from the text object?
+
+```{r}
+coef(test)
+```
+---
+
+---
+What can we extract from the text object?
+
+```{r}
+vcov(test)
+```
+---
+
+---
+So Let's do the simulations:
+
+```{r}
+#observed values for multinomial
+library(MASS)
+library(mvtnorm)
+n.draws <- 50
+set.seed(123)
+sim.coefs <- rmvnorm(n.draws, coef(test), vcov(test)) 
+head(sim.coefs)
+```
+---
+
+
+---
+Now we have our simulated coefficients from the MNL Model
+
+---
+
+
+
+---
+```{r}
+test <- mlogit(prog ~ 1 | ses + write,  data = ml_1, 
+               reflevel="academic", probit=FALSE)
+test1 <- mlogit(prog ~ 1 | ses + write,  data = ml_1, 
+               reflevel="academic", probit=FALSE,alt.subset=c("general","academic"))
+hmftest(test,test1)
+```
+---
+
+
+
+---
+Models for Counting: Poisson
+
+---
+
+
+---
+R Example:
+
+```{r}
+p <- read.csv("http://www.ats.ucla.edu/stat/data/poisson_sim.csv")
+p <- within(p, {
+  prog <- factor(prog, levels=1:3, labels=c("General", "Academic", "Vocational"))
+  id <- factor(id)
+})
+summary(p)
+```
+---
+
+
+---
+Describe the Count of Awards
+```{r}
+library(ggplot2)
+ggplot(p, aes(num_awards, fill = prog)) + geom_histogram(binwidth=.5, position="dodge")
+```
+---
+
+---
+```{r}
+summary(m1 <- glm(num_awards ~ prog + math, family="poisson", data=p))
+```
+---
+
+
+---
+```{r}
+## calculate and store predicted values
+p$phat <- predict(m1, type="response")
+
+## order by program and then by math
+p <- p[with(p, order(prog, math)), ]
+```
+---
+
+---
+```{r}
+## create the plot
+ggplot(p, aes(x = math, y = phat, colour = prog)) +
+  geom_point(aes(y = num_awards), alpha=.5, position=position_jitter(h=.2)) +
+  geom_line(size = 1) + labs(x = "Math Score", y = "Expected number of awards")
+```
+---
+
+
+---
+
+Observed Value Approach for Counts
+```{r}
+library(obsval)
+
+mod <- obsval(num_awards ~ prog + math, data=p,
+              reg.model = "poisson",
+              n.draws = 1000,
+              effect.var = "math",
+              effect.vals = c(65,75), # lowest to mid
+              verbose = TRUE)
+
+
+```
+---
+
+
+---
+```{r}
+library(vioplot)
+
+```
+---
+
+
+---
+```{r}
+vioplot(mod$sim.coef[,2], mod$sim.coef[,3], mod$sim.coef[,1], names=c("Academic","Vocational","Math"), 
+        col="red")
+title("Coefficients")
+```
+---
+
+---
+```{r}
+#head(mod$preds)
+vioplot(mod$preds[,1], mod$preds[,2], names=c("Low Math","Hight Math"), 
+        col="red")
+title("Predicted Count")
+```
+---
+
+
+
+---
+```{r}
+hist(mod$preds[,1],breaks=20,col="red")
+hist(mod$preds[,2], breaks=20,col="grey",add=T)
+box()
+```
+---
+
+---
+Test of Overdispersion
+```{r}
+library(AER)
+```
+---
+
+
+---
+Cameron & Trivedi (1990).
+Assume the mean is $E(Y)=\mu$ and the variance is $Var(Y)=\mu$. On may test this assumption as a null hypothesis against an alternative where $Var(Y)=\mu+c∗f(\mu)$ where the constant $c<0$ means underdispersion and $c>0$ means overdispersion. 
+
+$H_0:c=0$ vs. $H_1:c\ne 0$ and the test statistic is asymptotically standard normal under the null.
+```{r}
+dispersiontest(m1,trafo=1)
+```
+---
+
+
+---
+```{r}
+summary(m2 <- glm.nb(num_awards ~ prog + math, data=p))
+```
+---
+
+---
+```{r}
+summary(m2 <- zeroinfl(num_awards ~ prog+math| math, data=p))
+``` 
+---
+
+
+

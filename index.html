@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Models for Counts</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Models for Counts">
+  <meta name="author" content="William Reed">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Models for Counts</h1>
+    <h2>Poisson, Negative Binomial, Zero-Inflated</h2>
+    <p>William Reed<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>The Observed Value Approach for MNL</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Fit the Model to the Data</li>
+<li>Obtain the coefficients and variance covariance matrix.</li>
+<li>Simulate coefficients from multivariate normal distribution.</li>
+<li>Use observed values to calculate the probability of being in eaching 
+category.
+--- .class #id </li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <article data-timings="">
+    <pre><code>## Loading required package: foreign
+</code></pre>
+
+<pre><code>## Loading required package: mlogit
+</code></pre>
+
+<pre><code>## Loading required package: Formula
+</code></pre>
+
+<pre><code>## Loading required package: maxLik
+</code></pre>
+
+<pre><code>## Loading required package: miscTools
+</code></pre>
+
+<pre><code>## 
+## Please cite the &#39;maxLik&#39; package as:
+## Henningsen, Arne and Toomet, Ott (2011). maxLik: A package for maximum likelihood estimation in R. Computational Statistics 26(3), 443-458. DOI 10.1007/s00180-010-0217-1.
+## 
+## If you have questions, suggestions, or comments regarding the &#39;maxLik&#39; package, please use a forum or &#39;tracker&#39; at maxLik&#39;s R-Forge site:
+## https://r-forge.r-project.org/projects/maxlik/
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <article data-timings="">
+    <p>Estimated Coefficients</p>
+
+<pre><code class="r">test
+</code></pre>
+
+<pre><code>## 
+## Call:
+## mlogit(formula = prog ~ 1 | ses + write, data = ml_1, reflevel = &quot;academic&quot;,     probit = FALSE, method = &quot;nr&quot;, print.level = 0)
+## 
+## Coefficients:
+##  general:(intercept)  vocation:(intercept)     general:sesmiddle  
+##             2.852186              5.218200             -0.533291  
+##   vocation:sesmiddle       general:seshigh      vocation:seshigh  
+##             0.291393             -1.162832             -0.982670  
+##        general:write        vocation:write  
+##            -0.057928             -0.113603
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <article data-timings="">
+    <p>What can we extract from the text object?</p>
+
+<pre><code class="r">coef(test)
+</code></pre>
+
+<pre><code>##  general:(intercept) vocation:(intercept)    general:sesmiddle 
+##           2.85218622           5.21820011          -0.53329101 
+##   vocation:sesmiddle      general:seshigh     vocation:seshigh 
+##           0.29139311          -1.16283199          -0.98267029 
+##        general:write       vocation:write 
+##          -0.05792841          -0.11360264 
+## attr(,&quot;fixed&quot;)
+##  general:(intercept) vocation:(intercept)    general:sesmiddle 
+##                FALSE                FALSE                FALSE 
+##   vocation:sesmiddle      general:seshigh     vocation:seshigh 
+##                FALSE                FALSE                FALSE 
+##        general:write       vocation:write 
+##                FALSE                FALSE
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <article data-timings="">
+    <p>What can we extract from the text object?</p>
+
+<pre><code class="r">vcov(test)
+</code></pre>
+
+<pre><code>##                      general:(intercept) vocation:(intercept)
+## general:(intercept)           1.36058026           0.66778357
+## vocation:(intercept)          0.66778357           1.35384619
+## general:sesmiddle            -0.09395500          -0.04451320
+## vocation:sesmiddle           -0.06677804          -0.10785805
+## general:seshigh              -0.05981289          -0.03807395
+## vocation:seshigh             -0.06772187          -0.12863979
+## general:write                -0.02383235          -0.01124761
+## vocation:write               -0.01099920          -0.02425350
+##                      general:sesmiddle vocation:sesmiddle general:seshigh
+## general:(intercept)      -0.0939550025      -6.677804e-02   -0.0598128920
+## vocation:(intercept)     -0.0445132041      -1.078580e-01   -0.0380739460
+## general:sesmiddle         0.1968982082       9.180481e-02    0.1225343339
+## vocation:sesmiddle        0.0918048114       2.269319e-01    0.0636261299
+## general:seshigh           0.1225343339       6.362613e-02    0.2644216472
+## vocation:seshigh          0.0641289336       1.601999e-01    0.0993138541
+## general:write            -0.0005216298       7.442614e-05   -0.0011822676
+## vocation:write           -0.0003719121      -1.062758e-03   -0.0004612158
+##                      vocation:seshigh general:write vocation:write
+## general:(intercept)     -6.772187e-02 -2.383235e-02  -0.0109992033
+## vocation:(intercept)    -1.286398e-01 -1.124761e-02  -0.0242534988
+## general:sesmiddle        6.412893e-02 -5.216298e-04  -0.0003719121
+## vocation:sesmiddle       1.601999e-01  7.442614e-05  -0.0010627581
+## general:seshigh          9.931385e-02 -1.182268e-03  -0.0004612158
+## vocation:seshigh         3.547000e-01  8.439272e-05  -0.0006283594
+## general:write            8.439272e-05  4.584286e-04   0.0002039003
+## vocation:write          -6.283594e-04  2.039003e-04   0.0004937239
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <article data-timings="">
+    <p>So Let&#39;s do the simulations:</p>
+
+<pre><code class="r">#observed values for multinomial
+library(MASS)
+library(mvtnorm)
+n.draws &lt;- 50
+set.seed(123)
+sim.coefs &lt;- rmvnorm(n.draws, coef(test), vcov(test)) 
+head(sim.coefs)
+</code></pre>
+
+<pre><code>##      general:(intercept) vocation:(intercept) general:sesmiddle
+## [1,]            2.018905             4.679916        0.22694697
+## [2,]            1.860435             4.433063        0.09967418
+## [3,]            2.865965             3.225307       -0.43291413
+## [4,]            1.596803             3.057821       -0.21782745
+## [5,]            4.050451             6.424496       -0.12348334
+## [6,]            2.023477             4.742814       -0.69810113
+##      vocation:sesmiddle general:seshigh vocation:seshigh general:write
+## [1,]          0.7600901      -0.7393952       0.09943457   -0.05059648
+## [2,]          0.6310082      -0.7624847      -0.74454846   -0.04798940
+## [3,]          0.1768749      -1.6194320      -1.11603634   -0.06157040
+## [4,]          0.6889271      -1.4652665      -0.18553688   -0.03585208
+## [5,]          0.6108127      -0.8002564      -0.91613649   -0.08593814
+## [6,]          1.0354473      -0.7117518      -1.21330788   -0.04504081
+##      vocation:write
+## [1,]    -0.11687325
+## [2,]    -0.09712980
+## [3,]    -0.07585559
+## [4,]    -0.08011949
+## [5,]    -0.14145209
+## [6,]    -0.11515655
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <article data-timings="">
+    <p>Now we have our simulated coefficients from the MNL Model</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <article data-timings="">
+    
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">test &lt;- mlogit(prog ~ 1 | ses + write,  data = ml_1, 
+               reflevel=&quot;academic&quot;, probit=FALSE)
+test1 &lt;- mlogit(prog ~ 1 | ses + write,  data = ml_1, 
+               reflevel=&quot;academic&quot;, probit=FALSE,alt.subset=c(&quot;general&quot;,&quot;academic&quot;))
+hmftest(test,test1)
+</code></pre>
+
+<pre><code>## 
+##  Hausman-McFadden test
+## 
+## data:  ml_1
+## chisq = 0.5438, df = 4, p-value = 0.9691
+## alternative hypothesis: IIA is rejected
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-10" style="background:;">
+  <article data-timings="">
+    <p>Models for Counting: Poisson</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  <article data-timings="">
+    
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <article data-timings="">
+    <p>R Example:</p>
+
+<pre><code class="r">p &lt;- read.csv(&quot;http://www.ats.ucla.edu/stat/data/poisson_sim.csv&quot;)
+p &lt;- within(p, {
+  prog &lt;- factor(prog, levels=1:3, labels=c(&quot;General&quot;, &quot;Academic&quot;, &quot;Vocational&quot;))
+  id &lt;- factor(id)
+})
+summary(p)
+</code></pre>
+
+<pre><code>##        id        num_awards           prog          math      
+##  1      :  1   Min.   :0.00   General   : 45   Min.   :33.00  
+##  2      :  1   1st Qu.:0.00   Academic  :105   1st Qu.:45.00  
+##  3      :  1   Median :0.00   Vocational: 50   Median :52.00  
+##  4      :  1   Mean   :0.63                    Mean   :52.65  
+##  5      :  1   3rd Qu.:1.00                    3rd Qu.:59.00  
+##  6      :  1   Max.   :6.00                    Max.   :75.00  
+##  (Other):194
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-13" style="background:;">
+  <article data-timings="">
+    <p>Describe the Count of Awards</p>
+
+<pre><code class="r">library(ggplot2)
+ggplot(p, aes(num_awards, fill = prog)) + geom_histogram(binwidth=.5, position=&quot;dodge&quot;)
+</code></pre>
+
+<h2><img src="assets/fig/unnamed-chunk-8-1.png" alt="plot of chunk unnamed-chunk-8"></h2>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">summary(m1 &lt;- glm(num_awards ~ prog + math, family=&quot;poisson&quot;, data=p))
+</code></pre>
+
+<pre><code>## 
+## Call:
+## glm(formula = num_awards ~ prog + math, family = &quot;poisson&quot;, data = p)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.2043  -0.8436  -0.5106   0.2558   2.6796  
+## 
+## Coefficients:
+##                Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)    -5.24712    0.65845  -7.969 1.60e-15 ***
+## progAcademic    1.08386    0.35825   3.025  0.00248 ** 
+## progVocational  0.36981    0.44107   0.838  0.40179    
+## math            0.07015    0.01060   6.619 3.63e-11 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 287.67  on 199  degrees of freedom
+## Residual deviance: 189.45  on 196  degrees of freedom
+## AIC: 373.5
+## 
+## Number of Fisher Scoring iterations: 6
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-15" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">## calculate and store predicted values
+p$phat &lt;- predict(m1, type=&quot;response&quot;)
+
+## order by program and then by math
+p &lt;- p[with(p, order(prog, math)), ]
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-16" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">## create the plot
+ggplot(p, aes(x = math, y = phat, colour = prog)) +
+  geom_point(aes(y = num_awards), alpha=.5, position=position_jitter(h=.2)) +
+  geom_line(size = 1) + labs(x = &quot;Math Score&quot;, y = &quot;Expected number of awards&quot;)
+</code></pre>
+
+<h2><img src="assets/fig/unnamed-chunk-11-1.png" alt="plot of chunk unnamed-chunk-11"></h2>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-17" style="background:;">
+  <article data-timings="">
+    <p>Observed Value Approach for Counts</p>
+
+<pre><code class="r">library(obsval)
+
+mod &lt;- obsval(num_awards ~ prog + math, data=p,
+              reg.model = &quot;poisson&quot;,
+              n.draws = 1000,
+              effect.var = &quot;math&quot;,
+              effect.vals = c(65,75), # lowest to mid
+              verbose = TRUE)
+</code></pre>
+
+<pre><code>## Estimating model...
+## Done estimating model.
+## Drawing simulated coefficients from posterior distribution...
+## Finished drawing simulated coefficients from posterior distribution...
+## Now in obsvalPredict() ... 
+## Constructing X.matrix ... Generating control predictions ... 
+## Entered computePreds()... 
+## Generating predictions for each set of simulated coefficients ...
+## Calculated predictions for each set of simulated coefficients.
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-18" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(vioplot)
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-19" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">vioplot(mod$sim.coef[,2], mod$sim.coef[,3], mod$sim.coef[,1], names=c(&quot;Academic&quot;,&quot;Vocational&quot;,&quot;Math&quot;), 
+        col=&quot;red&quot;)
+title(&quot;Coefficients&quot;)
+</code></pre>
+
+<h2><img src="assets/fig/unnamed-chunk-14-1.png" alt="plot of chunk unnamed-chunk-14"></h2>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-20" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">#head(mod$preds)
+vioplot(mod$preds[,1], mod$preds[,2], names=c(&quot;Low Math&quot;,&quot;Hight Math&quot;), 
+        col=&quot;red&quot;)
+title(&quot;Predicted Count&quot;)
+</code></pre>
+
+<h2><img src="assets/fig/unnamed-chunk-15-1.png" alt="plot of chunk unnamed-chunk-15"></h2>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-21" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">hist(mod$preds[,1],breaks=20,col=&quot;red&quot;)
+hist(mod$preds[,2], breaks=20,col=&quot;grey&quot;,add=T)
+box()
+</code></pre>
+
+<h2><img src="assets/fig/unnamed-chunk-16-1.png" alt="plot of chunk unnamed-chunk-16"></h2>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-22" style="background:;">
+  <article data-timings="">
+    <p>Test of Overdispersion</p>
+
+<pre><code class="r">library(AER)
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-23" style="background:;">
+  <article data-timings="">
+    <p>Cameron &amp; Trivedi (1990).
+Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test this assumption as a null hypothesis against an alternative where \(Var(Y)=\mu+c∗f(\mu)\) where the constant \(c<0\) means underdispersion and \(c>0\) means overdispersion. </p>
+
+<p>\(H_0:c=0\) vs. \(H_1:c\ne 0\) and the test statistic is asymptotically standard normal under the null.</p>
+
+<pre><code class="r">dispersiontest(m1,trafo=1)
+</code></pre>
+
+<pre><code>## 
+##  Overdispersion test
+## 
+## data:  m1
+## z = 0.53224, p-value = 0.2973
+## alternative hypothesis: true alpha is greater than 0
+## sample estimates:
+##      alpha 
+## 0.04725442
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-24" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">summary(m2 &lt;- glm.nb(num_awards ~ prog + math, data=p))
+</code></pre>
+
+<pre><code>## 
+## Call:
+## glm.nb(formula = num_awards ~ prog + math, data = p, init.theta = 6.114661779, 
+##     link = log)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.0322  -0.8343  -0.5039   0.2276   2.3222  
+## 
+## Coefficients:
+##                Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)    -5.29331    0.70416  -7.517 5.60e-14 ***
+## progAcademic    1.07507    0.36699   2.929   0.0034 ** 
+## progVocational  0.36696    0.45230   0.811   0.4172    
+## math            0.07107    0.01153   6.165 7.05e-10 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for Negative Binomial(6.1147) family taken to be 1)
+## 
+##     Null deviance: 257.93  on 199  degrees of freedom
+## Residual deviance: 169.76  on 196  degrees of freedom
+## AIC: 373.81
+## 
+## Number of Fisher Scoring iterations: 1
+## 
+## 
+##               Theta:  6.11 
+##           Std. Err.:  5.58 
+## 
+##  2 x log-likelihood:  -363.811
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-25" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">summary(m2 &lt;- zeroinfl(num_awards ~ prog+math| math, data=p))
+</code></pre>
+
+<pre><code>## 
+## Call:
+## zeroinfl(formula = num_awards ~ prog + math | math, data = p)
+## 
+## Pearson residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.4859 -0.5865 -0.3589  0.2675  3.5081 
+## 
+## Count model coefficients (poisson with log link):
+##                Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)    -4.92840    1.07600  -4.580 4.64e-06 ***
+## progAcademic    1.08877    0.36323   2.997  0.00272 ** 
+## progVocational  0.38097    0.44953   0.847  0.39673    
+## math            0.06602    0.01667   3.961 7.47e-05 ***
+## 
+## Zero-inflation model coefficients (binomial with logit link):
+##             Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept)  0.55194    7.51267   0.073    0.941
+## math        -0.05342    0.12134  -0.440    0.660
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1 
+## 
+## Number of iterations in BFGS optimization: 27 
+## Log-likelihood: -182.5 on 6 Df
+</code></pre>
+
+<hr>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='The Observed Value Approach for MNL'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='NA'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='NA'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='NA'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='NA'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='NA'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='NA'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='NA'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='NA'>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='NA'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='NA'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='NA'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='NA'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title='NA'>
+         14
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=15 title='NA'>
+         15
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=16 title='NA'>
+         16
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=17 title='NA'>
+         17
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=18 title='NA'>
+         18
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=19 title='NA'>
+         19
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=20 title='NA'>
+         20
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=21 title='NA'>
+         21
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=22 title='NA'>
+         22
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=23 title='NA'>
+         23
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=24 title='NA'>
+         24
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=25 title='NA'>
+         25
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
