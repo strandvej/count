@@ -267,25 +267,42 @@ hmftest(test,test1)
 </slide>
 
 <slide class="" id="slide-10" style="background:;">
+  <hgroup>
+    <h2>Models for Counting: Poisson</h2>
+  </hgroup>
   <article data-timings="">
-    <p>Models for Counting: Poisson</p>
+    <pre><code class="r">count&lt;-rpois(1000,5)
+hist(count,col=&quot;blue&quot;)
+</code></pre>
+
+<h2><img src="figure/unnamed-chunk-7-1.png" alt="plot of chunk unnamed-chunk-7"></h2>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
 <slide class="" id="slide-11" style="background:;">
+  <hgroup>
+    <h2>The Poisson Regression Model</h2>
+  </hgroup>
   <article data-timings="">
-    
+    <ul class = "build incremental">
+<li>\(E(y)=\mu\)</li>
+<li>\(Var(y)=E(y)=\mu\)</li>
+<li>\(Pr(y|\mu)=\frac{exp(-\mu)\mu^y}{y!}\)</li>
+<li>\(\mu_i=E(y_i|x_i)=exp(\mathbf{x_i\beta})\)</li>
+</ul>
+
   </article>
   <!-- Presenter Notes -->
 </slide>
 
 <slide class="" id="slide-12" style="background:;">
+  <hgroup>
+    <h2>R Example:</h2>
+  </hgroup>
   <article data-timings="">
-    <p>R Example:</p>
-
-<pre><code class="r">p &lt;- read.csv(&quot;http://www.ats.ucla.edu/stat/data/poisson_sim.csv&quot;)
+    <pre><code class="r">p &lt;- read.csv(&quot;http://www.ats.ucla.edu/stat/data/poisson_sim.csv&quot;)
 p &lt;- within(p, {
   prog &lt;- factor(prog, levels=1:3, labels=c(&quot;General&quot;, &quot;Academic&quot;, &quot;Vocational&quot;))
   id &lt;- factor(id)
@@ -317,7 +334,7 @@ summary(p)
 ggplot(p, aes(num_awards, fill = prog)) + geom_histogram(binwidth=.5, position=&quot;dodge&quot;)
 </code></pre>
 
-<h2><img src="assets/fig/unnamed-chunk-8-1.png" alt="plot of chunk unnamed-chunk-8"></h2>
+<h2><img src="figure/unnamed-chunk-9-1.png" alt="plot of chunk unnamed-chunk-9"></h2>
 
   </article>
   <!-- Presenter Notes -->
@@ -383,7 +400,7 @@ ggplot(p, aes(x = math, y = phat, colour = prog)) +
   geom_line(size = 1) + labs(x = &quot;Math Score&quot;, y = &quot;Expected number of awards&quot;)
 </code></pre>
 
-<h2><img src="assets/fig/unnamed-chunk-11-1.png" alt="plot of chunk unnamed-chunk-11"></h2>
+<h2><img src="figure/unnamed-chunk-12-1.png" alt="plot of chunk unnamed-chunk-12"></h2>
 
   </article>
   <!-- Presenter Notes -->
@@ -425,6 +442,21 @@ mod &lt;- obsval(num_awards ~ prog + math, data=p,
     <pre><code class="r">library(vioplot)
 </code></pre>
 
+<pre><code>## Loading required package: sm
+</code></pre>
+
+<pre><code>## Package &#39;sm&#39;, version 2.2-5.4: type help(sm) for summary information
+</code></pre>
+
+<pre><code>## 
+## Attaching package: &#39;sm&#39;
+</code></pre>
+
+<pre><code>## The following object is masked from &#39;package:MASS&#39;:
+## 
+##     muscle
+</code></pre>
+
 <hr>
 
   </article>
@@ -438,7 +470,7 @@ mod &lt;- obsval(num_awards ~ prog + math, data=p,
 title(&quot;Coefficients&quot;)
 </code></pre>
 
-<h2><img src="assets/fig/unnamed-chunk-14-1.png" alt="plot of chunk unnamed-chunk-14"></h2>
+<h2><img src="figure/unnamed-chunk-15-1.png" alt="plot of chunk unnamed-chunk-15"></h2>
 
   </article>
   <!-- Presenter Notes -->
@@ -452,7 +484,7 @@ vioplot(mod$preds[,1], mod$preds[,2], names=c(&quot;Low Math&quot;,&quot;Hight M
 title(&quot;Predicted Count&quot;)
 </code></pre>
 
-<h2><img src="assets/fig/unnamed-chunk-15-1.png" alt="plot of chunk unnamed-chunk-15"></h2>
+<h2><img src="figure/unnamed-chunk-16-1.png" alt="plot of chunk unnamed-chunk-16"></h2>
 
   </article>
   <!-- Presenter Notes -->
@@ -465,7 +497,7 @@ hist(mod$preds[,2], breaks=20,col=&quot;grey&quot;,add=T)
 box()
 </code></pre>
 
-<h2><img src="assets/fig/unnamed-chunk-16-1.png" alt="plot of chunk unnamed-chunk-16"></h2>
+<h2><img src="figure/unnamed-chunk-17-1.png" alt="plot of chunk unnamed-chunk-17"></h2>
 
   </article>
   <!-- Presenter Notes -->
@@ -473,9 +505,33 @@ box()
 
 <slide class="" id="slide-22" style="background:;">
   <article data-timings="">
-    <p>Test of Overdispersion</p>
+    <p>Test of Over dispersion</p>
 
 <pre><code class="r">library(AER)
+</code></pre>
+
+<pre><code>## Loading required package: car
+</code></pre>
+
+<pre><code>## Loading required package: lmtest
+</code></pre>
+
+<pre><code>## Loading required package: zoo
+</code></pre>
+
+<pre><code>## 
+## Attaching package: &#39;zoo&#39;
+</code></pre>
+
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric
+</code></pre>
+
+<pre><code>## Loading required package: sandwich
+</code></pre>
+
+<pre><code>## Loading required package: survival
 </code></pre>
 
 <hr>
@@ -487,7 +543,7 @@ box()
 <slide class="" id="slide-23" style="background:;">
   <article data-timings="">
     <p>Cameron &amp; Trivedi (1990).
-Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test this assumption as a null hypothesis against an alternative where \(Var(Y)=\mu+c∗f(\mu)\) where the constant \(c<0\) means underdispersion and \(c>0\) means overdispersion. </p>
+Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test this assumption as a null hypothesis against an alternative where \(Var(Y)=\mu+c∗f(\mu)\) where the constant \(c<0\) means under dispersion and \(c>0\) means over dispersion. </p>
 
 <p>\(H_0:c=0\) vs. \(H_1:c\ne 0\) and the test statistic is asymptotically standard normal under the null.</p>
 
@@ -560,30 +616,7 @@ Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test 
     <pre><code class="r">summary(m2 &lt;- zeroinfl(num_awards ~ prog+math| math, data=p))
 </code></pre>
 
-<pre><code>## 
-## Call:
-## zeroinfl(formula = num_awards ~ prog + math | math, data = p)
-## 
-## Pearson residuals:
-##     Min      1Q  Median      3Q     Max 
-## -1.4859 -0.5865 -0.3589  0.2675  3.5081 
-## 
-## Count model coefficients (poisson with log link):
-##                Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)    -4.92840    1.07600  -4.580 4.64e-06 ***
-## progAcademic    1.08877    0.36323   2.997  0.00272 ** 
-## progVocational  0.38097    0.44953   0.847  0.39673    
-## math            0.06602    0.01667   3.961 7.47e-05 ***
-## 
-## Zero-inflation model coefficients (binomial with logit link):
-##             Estimate Std. Error z value Pr(&gt;|z|)
-## (Intercept)  0.55194    7.51267   0.073    0.941
-## math        -0.05342    0.12134  -0.440    0.660
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1 
-## 
-## Number of iterations in BFGS optimization: 27 
-## Log-likelihood: -182.5 on 6 Df
+<pre><code>## Error in summary(m2 &lt;- zeroinfl(num_awards ~ prog + math | math, data = p)): could not find function &quot;zeroinfl&quot;
 </code></pre>
 
 <hr>
@@ -652,19 +685,19 @@ Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test 
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=10 title='NA'>
+        data-slide=10 title='Models for Counting: Poisson'>
          10
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=11 title='NA'>
+        data-slide=11 title='The Poisson Regression Model'>
          11
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=12 title='NA'>
+        data-slide=12 title='R Example:'>
          12
       </a>
     </li>

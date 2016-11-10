@@ -215,13 +215,25 @@ hmftest(test,test1)
 
 
 ---
-Models for Counting: Poisson
+## Models for Counting: Poisson 
 
+```r
+count<-rpois(1000,5)
+hist(count,col="blue")
+```
+
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
 ---
 
+---
+## The Poisson Regression Model
+> - $E(y)=\mu$
+> - $Var(y)=E(y)=\mu$
+> - $Pr(y|\mu)=\frac{exp(-\mu)\mu^y}{y!}$
+> - $\mu_i=E(y_i|x_i)=exp(\mathbf{x_i\beta})$
 
 ---
-R Example:
+## R Example:
 
 
 ```r
@@ -254,7 +266,7 @@ library(ggplot2)
 ggplot(p, aes(num_awards, fill = prog)) + geom_histogram(binwidth=.5, position="dodge")
 ```
 
-![plot of chunk unnamed-chunk-8](assets/fig/unnamed-chunk-8-1.png)
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
 ---
 
 ---
@@ -312,7 +324,7 @@ ggplot(p, aes(x = math, y = phat, colour = prog)) +
   geom_line(size = 1) + labs(x = "Math Score", y = "Expected number of awards")
 ```
 
-![plot of chunk unnamed-chunk-11](assets/fig/unnamed-chunk-11-1.png)
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
 ---
 
 
@@ -350,6 +362,25 @@ mod <- obsval(num_awards ~ prog + math, data=p,
 ```r
 library(vioplot)
 ```
+
+```
+## Loading required package: sm
+```
+
+```
+## Package 'sm', version 2.2-5.4: type help(sm) for summary information
+```
+
+```
+## 
+## Attaching package: 'sm'
+```
+
+```
+## The following object is masked from 'package:MASS':
+## 
+##     muscle
+```
 ---
 
 
@@ -361,7 +392,7 @@ vioplot(mod$sim.coef[,2], mod$sim.coef[,3], mod$sim.coef[,1], names=c("Academic"
 title("Coefficients")
 ```
 
-![plot of chunk unnamed-chunk-14](assets/fig/unnamed-chunk-14-1.png)
+![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png)
 ---
 
 ---
@@ -373,7 +404,7 @@ vioplot(mod$preds[,1], mod$preds[,2], names=c("Low Math","Hight Math"),
 title("Predicted Count")
 ```
 
-![plot of chunk unnamed-chunk-15](assets/fig/unnamed-chunk-15-1.png)
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
 ---
 
 
@@ -386,21 +417,52 @@ hist(mod$preds[,2], breaks=20,col="grey",add=T)
 box()
 ```
 
-![plot of chunk unnamed-chunk-16](assets/fig/unnamed-chunk-16-1.png)
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png)
 ---
 
 ---
-Test of Overdispersion
+Test of Over dispersion
 
 ```r
 library(AER)
+```
+
+```
+## Loading required package: car
+```
+
+```
+## Loading required package: lmtest
+```
+
+```
+## Loading required package: zoo
+```
+
+```
+## 
+## Attaching package: 'zoo'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+```
+
+```
+## Loading required package: sandwich
+```
+
+```
+## Loading required package: survival
 ```
 ---
 
 
 ---
 Cameron & Trivedi (1990).
-Assume the mean is $E(Y)=\mu$ and the variance is $Var(Y)=\mu$. On may test this assumption as a null hypothesis against an alternative where $Var(Y)=\mu+c∗f(\mu)$ where the constant $c<0$ means underdispersion and $c>0$ means overdispersion. 
+Assume the mean is $E(Y)=\mu$ and the variance is $Var(Y)=\mu$. On may test this assumption as a null hypothesis against an alternative where $Var(Y)=\mu+c∗f(\mu)$ where the constant $c<0$ means under dispersion and $c>0$ means over dispersion. 
 
 $H_0:c=0$ vs. $H_1:c\ne 0$ and the test statistic is asymptotically standard normal under the null.
 
@@ -470,30 +532,7 @@ summary(m2 <- zeroinfl(num_awards ~ prog+math| math, data=p))
 ```
 
 ```
-## 
-## Call:
-## zeroinfl(formula = num_awards ~ prog + math | math, data = p)
-## 
-## Pearson residuals:
-##     Min      1Q  Median      3Q     Max 
-## -1.4859 -0.5865 -0.3589  0.2675  3.5081 
-## 
-## Count model coefficients (poisson with log link):
-##                Estimate Std. Error z value Pr(>|z|)    
-## (Intercept)    -4.92840    1.07600  -4.580 4.64e-06 ***
-## progAcademic    1.08877    0.36323   2.997  0.00272 ** 
-## progVocational  0.38097    0.44953   0.847  0.39673    
-## math            0.06602    0.01667   3.961 7.47e-05 ***
-## 
-## Zero-inflation model coefficients (binomial with logit link):
-##             Estimate Std. Error z value Pr(>|z|)
-## (Intercept)  0.55194    7.51267   0.073    0.941
-## math        -0.05342    0.12134  -0.440    0.660
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
-## 
-## Number of iterations in BFGS optimization: 27 
-## Log-likelihood: -182.5 on 6 Df
+## Error in summary(m2 <- zeroinfl(num_awards ~ prog + math | math, data = p)): could not find function "zeroinfl"
 ```
 ---
 
