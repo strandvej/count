@@ -230,20 +230,33 @@ head(sim.coefs)
 
 <slide class="" id="slide-7" style="background:;">
   <article data-timings="">
-    <p>Now we have our simulated coefficients from the MNL Model</p>
+    <p>Use the coefficients to caculated probability of being in General or 
+Vocational tracks.</p>
+
+<pre><code class="r">  # second, for current set of coefs, loop through each observation
+  # and values for the linear predictors
+  for(j in 1:n.obs){
+
+    ###reordered columns are now numbered consitently here ###
+    Xb.gen[j] &lt;- sim.coefs[i,1] + sim.coefs[i,3] + sim.coefs[i,5]
+    Xb.voc[j] &lt;- sim.coefs[i,2] + sim.coefs[i,4] + sim.coefs[i,6]
+  }
+  ####calculate probability of being in category voc or gen for each observation####
+  p.gen=exp(Xb.gen)/(1+exp(Xb.gen)+exp(Xb.voc))
+  p.voc=exp(Xb.voc)/(1+exp(Xb.gen)+exp(Xb.voc))
+  ####average probability across all observations####
+  p.gen[i]&lt;-mean(p.gen)
+  p.voc[i]&lt;-mean(p.voc)
+}
+</code></pre>
+
+<hr>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
 <slide class="" id="slide-8" style="background:;">
-  <article data-timings="">
-    
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-9" style="background:;">
   <article data-timings="">
     <pre><code class="r">test &lt;- mlogit(prog ~ 1 | ses + write,  data = ml_1, 
                reflevel=&quot;academic&quot;, probit=FALSE)
@@ -266,7 +279,7 @@ hmftest(test,test1)
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-10" style="background:;">
+<slide class="" id="slide-9" style="background:;">
   <hgroup>
     <h2>Models for Counting: Poisson</h2>
   </hgroup>
@@ -275,13 +288,13 @@ hmftest(test,test1)
 hist(count,col=&quot;blue&quot;)
 </code></pre>
 
-<h2><img src="figure/unnamed-chunk-7-1.png" alt="plot of chunk unnamed-chunk-7"></h2>
+<h2><img src="figure/unnamed-chunk-8-1.png" alt="plot of chunk unnamed-chunk-8"></h2>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-11" style="background:;">
+<slide class="" id="slide-10" style="background:;">
   <hgroup>
     <h2>The Poisson Regression Model</h2>
   </hgroup>
@@ -297,7 +310,7 @@ hist(count,col=&quot;blue&quot;)
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-12" style="background:;">
+<slide class="" id="slide-11" style="background:;">
   <hgroup>
     <h2>R Example:</h2>
   </hgroup>
@@ -326,7 +339,7 @@ summary(p)
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-13" style="background:;">
+<slide class="" id="slide-12" style="background:;">
   <article data-timings="">
     <p>Describe the Count of Awards</p>
 
@@ -334,13 +347,13 @@ summary(p)
 ggplot(p, aes(num_awards, fill = prog)) + geom_histogram(binwidth=.5, position=&quot;dodge&quot;)
 </code></pre>
 
-<h2><img src="figure/unnamed-chunk-9-1.png" alt="plot of chunk unnamed-chunk-9"></h2>
+<h2><img src="figure/unnamed-chunk-10-1.png" alt="plot of chunk unnamed-chunk-10"></h2>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-14" style="background:;">
+<slide class="" id="slide-13" style="background:;">
   <article data-timings="">
     <pre><code class="r">summary(m1 &lt;- glm(num_awards ~ prog + math, family=&quot;poisson&quot;, data=p))
 </code></pre>
@@ -377,7 +390,7 @@ ggplot(p, aes(num_awards, fill = prog)) + geom_histogram(binwidth=.5, position=&
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-15" style="background:;">
+<slide class="" id="slide-14" style="background:;">
   <article data-timings="">
     <pre><code class="r">## calculate and store predicted values
 p$phat &lt;- predict(m1, type=&quot;response&quot;)
@@ -392,7 +405,7 @@ p &lt;- p[with(p, order(prog, math)), ]
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-16" style="background:;">
+<slide class="" id="slide-15" style="background:;">
   <article data-timings="">
     <pre><code class="r">## create the plot
 ggplot(p, aes(x = math, y = phat, colour = prog)) +
@@ -400,13 +413,13 @@ ggplot(p, aes(x = math, y = phat, colour = prog)) +
   geom_line(size = 1) + labs(x = &quot;Math Score&quot;, y = &quot;Expected number of awards&quot;)
 </code></pre>
 
-<h2><img src="figure/unnamed-chunk-12-1.png" alt="plot of chunk unnamed-chunk-12"></h2>
+<h2><img src="figure/unnamed-chunk-13-1.png" alt="plot of chunk unnamed-chunk-13"></h2>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-17" style="background:;">
+<slide class="" id="slide-16" style="background:;">
   <article data-timings="">
     <p>Observed Value Approach for Counts</p>
 
@@ -437,7 +450,7 @@ mod &lt;- obsval(num_awards ~ prog + math, data=p,
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-18" style="background:;">
+<slide class="" id="slide-17" style="background:;">
   <article data-timings="">
     <pre><code class="r">library(vioplot)
 </code></pre>
@@ -463,25 +476,11 @@ mod &lt;- obsval(num_awards ~ prog + math, data=p,
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-19" style="background:;">
+<slide class="" id="slide-18" style="background:;">
   <article data-timings="">
-    <pre><code class="r">vioplot(mod$sim.coef[,2], mod$sim.coef[,3], mod$sim.coef[,1], names=c(&quot;Academic&quot;,&quot;Vocational&quot;,&quot;Math&quot;), 
+    <pre><code class="r">vioplot(mod$sim.coef[,2], mod$sim.coef[,3], mod$sim.coef[,4], names=c(&quot;Academic&quot;,&quot;Vocational&quot;,&quot;Math&quot;), 
         col=&quot;red&quot;)
 title(&quot;Coefficients&quot;)
-</code></pre>
-
-<h2><img src="figure/unnamed-chunk-15-1.png" alt="plot of chunk unnamed-chunk-15"></h2>
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-20" style="background:;">
-  <article data-timings="">
-    <pre><code class="r">#head(mod$preds)
-vioplot(mod$preds[,1], mod$preds[,2], names=c(&quot;Low Math&quot;,&quot;Hight Math&quot;), 
-        col=&quot;red&quot;)
-title(&quot;Predicted Count&quot;)
 </code></pre>
 
 <h2><img src="figure/unnamed-chunk-16-1.png" alt="plot of chunk unnamed-chunk-16"></h2>
@@ -490,11 +489,12 @@ title(&quot;Predicted Count&quot;)
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-21" style="background:;">
+<slide class="" id="slide-19" style="background:;">
   <article data-timings="">
-    <pre><code class="r">hist(mod$preds[,1],breaks=20,col=&quot;red&quot;)
-hist(mod$preds[,2], breaks=20,col=&quot;grey&quot;,add=T)
-box()
+    <pre><code class="r">#head(mod$preds)
+vioplot(mod$preds[,1], mod$preds[,2], names=c(&quot;Low Math&quot;,&quot;Hight Math&quot;), 
+        col=&quot;red&quot;)
+title(&quot;Predicted Count&quot;)
 </code></pre>
 
 <h2><img src="figure/unnamed-chunk-17-1.png" alt="plot of chunk unnamed-chunk-17"></h2>
@@ -503,7 +503,20 @@ box()
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-22" style="background:;">
+<slide class="" id="slide-20" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">hist(mod$preds[,1],breaks=20,col=&quot;red&quot;)
+hist(mod$preds[,2], breaks=20,col=&quot;grey&quot;,add=T)
+box()
+</code></pre>
+
+<h2><img src="figure/unnamed-chunk-18-1.png" alt="plot of chunk unnamed-chunk-18"></h2>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-21" style="background:;">
   <article data-timings="">
     <p>Test of Over dispersion</p>
 
@@ -540,7 +553,7 @@ box()
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-23" style="background:;">
+<slide class="" id="slide-22" style="background:;">
   <article data-timings="">
     <p>Cameron &amp; Trivedi (1990).
 Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test this assumption as a null hypothesis against an alternative where \(Var(Y)=\mu+c∗f(\mu)\) where the constant \(c<0\) means under dispersion and \(c>0\) means over dispersion. </p>
@@ -567,7 +580,7 @@ Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test 
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-24" style="background:;">
+<slide class="" id="slide-23" style="background:;">
   <article data-timings="">
     <pre><code class="r">summary(m2 &lt;- glm.nb(num_awards ~ prog + math, data=p))
 </code></pre>
@@ -611,12 +624,9 @@ Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test 
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-25" style="background:;">
+<slide class="" id="slide-24" style="background:;">
   <article data-timings="">
-    <pre><code class="r">summary(m2 &lt;- zeroinfl(num_awards ~ prog+math| math, data=p))
-</code></pre>
-
-<pre><code>## Error in summary(m2 &lt;- zeroinfl(num_awards ~ prog + math | math, data = p)): could not find function &quot;zeroinfl&quot;
+    <pre><code class="r">summary(m3 &lt;- zeroinfl(num_awards ~ prog+math| math, data=p))
 </code></pre>
 
 <hr>
@@ -679,25 +689,25 @@ Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test 
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=9 title='NA'>
+        data-slide=9 title='Models for Counting: Poisson'>
          9
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=10 title='Models for Counting: Poisson'>
+        data-slide=10 title='The Poisson Regression Model'>
          10
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=11 title='The Poisson Regression Model'>
+        data-slide=11 title='R Example:'>
          11
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=12 title='R Example:'>
+        data-slide=12 title='NA'>
          12
       </a>
     </li>
@@ -771,12 +781,6 @@ Assume the mean is \(E(Y)=\mu\) and the variance is \(Var(Y)=\mu\). On may test 
       <a href="#" target="_self" rel='tooltip' 
         data-slide=24 title='NA'>
          24
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=25 title='NA'>
-         25
       </a>
     </li>
   </ul>

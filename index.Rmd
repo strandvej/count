@@ -77,8 +77,25 @@ head(sim.coefs)
 
 
 ---
-Now we have our simulated coefficients from the MNL Model
-
+Use the coefficients to caculated probability of being in General or 
+Vocational tracks.
+```{r,eval=FALSE}
+  # second, for current set of coefs, loop through each observation
+  # and values for the linear predictors
+  for(j in 1:n.obs){
+    
+    ###reordered columns are now numbered consitently here ###
+    Xb.gen[j] <- sim.coefs[i,1] + sim.coefs[i,3] + sim.coefs[i,5]
+    Xb.voc[j] <- sim.coefs[i,2] + sim.coefs[i,4] + sim.coefs[i,6]
+  }
+  ####calculate probability of being in category voc or gen for each observation####
+  p.gen=exp(Xb.gen)/(1+exp(Xb.gen)+exp(Xb.voc))
+  p.voc=exp(Xb.voc)/(1+exp(Xb.gen)+exp(Xb.voc))
+  ####average probability across all observations####
+  p.gen[i]<-mean(p.gen)
+  p.voc[i]<-mean(p.voc)
+}
+```
 ---
 
 
@@ -109,6 +126,7 @@ hist(count,col="blue")
 > - $Var(y)=E(y)=\mu$
 > - $Pr(y|\mu)=\frac{exp(-\mu)\mu^y}{y!}$
 > - $\mu_i=E(y_i|x_i)=exp(\mathbf{x_i\beta})$
+
 
 ---
 ## R Example:
@@ -187,7 +205,7 @@ library(vioplot)
 
 ---
 ```{r}
-vioplot(mod$sim.coef[,2], mod$sim.coef[,3], mod$sim.coef[,1], names=c("Academic","Vocational","Math"), 
+vioplot(mod$sim.coef[,2], mod$sim.coef[,3], mod$sim.coef[,4], names=c("Academic","Vocational","Math"), 
         col="red")
 title("Coefficients")
 ```
@@ -238,8 +256,9 @@ summary(m2 <- glm.nb(num_awards ~ prog + math, data=p))
 ---
 
 ---
-```{r}
-summary(m2 <- zeroinfl(num_awards ~ prog+math| math, data=p))
+```{r,eval=FALSE}
+
+summary(m3 <- zeroinfl(num_awards ~ prog+math| math, data=p))
 ``` 
 ---
 

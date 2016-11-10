@@ -186,8 +186,26 @@ head(sim.coefs)
 
 
 ---
-Now we have our simulated coefficients from the MNL Model
+Use the coefficients to caculated probability of being in General or 
+Vocational tracks.
 
+```r
+  # second, for current set of coefs, loop through each observation
+  # and values for the linear predictors
+  for(j in 1:n.obs){
+    
+    ###reordered columns are now numbered consitently here ###
+    Xb.gen[j] <- sim.coefs[i,1] + sim.coefs[i,3] + sim.coefs[i,5]
+    Xb.voc[j] <- sim.coefs[i,2] + sim.coefs[i,4] + sim.coefs[i,6]
+  }
+  ####calculate probability of being in category voc or gen for each observation####
+  p.gen=exp(Xb.gen)/(1+exp(Xb.gen)+exp(Xb.voc))
+  p.voc=exp(Xb.voc)/(1+exp(Xb.gen)+exp(Xb.voc))
+  ####average probability across all observations####
+  p.gen[i]<-mean(p.gen)
+  p.voc[i]<-mean(p.voc)
+}
+```
 ---
 
 
@@ -222,7 +240,7 @@ count<-rpois(1000,5)
 hist(count,col="blue")
 ```
 
-![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
 ---
 
 ---
@@ -231,6 +249,7 @@ hist(count,col="blue")
 > - $Var(y)=E(y)=\mu$
 > - $Pr(y|\mu)=\frac{exp(-\mu)\mu^y}{y!}$
 > - $\mu_i=E(y_i|x_i)=exp(\mathbf{x_i\beta})$
+
 
 ---
 ## R Example:
@@ -266,7 +285,7 @@ library(ggplot2)
 ggplot(p, aes(num_awards, fill = prog)) + geom_histogram(binwidth=.5, position="dodge")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
 ---
 
 ---
@@ -324,7 +343,7 @@ ggplot(p, aes(x = math, y = phat, colour = prog)) +
   geom_line(size = 1) + labs(x = "Math Score", y = "Expected number of awards")
 ```
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png)
 ---
 
 
@@ -387,12 +406,12 @@ library(vioplot)
 ---
 
 ```r
-vioplot(mod$sim.coef[,2], mod$sim.coef[,3], mod$sim.coef[,1], names=c("Academic","Vocational","Math"), 
+vioplot(mod$sim.coef[,2], mod$sim.coef[,3], mod$sim.coef[,4], names=c("Academic","Vocational","Math"), 
         col="red")
 title("Coefficients")
 ```
 
-![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png)
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
 ---
 
 ---
@@ -404,7 +423,7 @@ vioplot(mod$preds[,1], mod$preds[,2], names=c("Low Math","Hight Math"),
 title("Predicted Count")
 ```
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png)
 ---
 
 
@@ -417,7 +436,7 @@ hist(mod$preds[,2], breaks=20,col="grey",add=T)
 box()
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png)
+![plot of chunk unnamed-chunk-18](figure/unnamed-chunk-18-1.png)
 ---
 
 ---
@@ -528,11 +547,7 @@ summary(m2 <- glm.nb(num_awards ~ prog + math, data=p))
 ---
 
 ```r
-summary(m2 <- zeroinfl(num_awards ~ prog+math| math, data=p))
-```
-
-```
-## Error in summary(m2 <- zeroinfl(num_awards ~ prog + math | math, data = p)): could not find function "zeroinfl"
+summary(m3 <- zeroinfl(num_awards ~ prog+math| math, data=p))
 ```
 ---
 
