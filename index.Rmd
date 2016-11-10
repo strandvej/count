@@ -204,7 +204,7 @@ box()
 ---
 
 ---
-Test of Overdispersion
+Test of Over dispersion
 ```{r}
 library(AER)
 ```
@@ -213,7 +213,7 @@ library(AER)
 
 ---
 Cameron & Trivedi (1990).
-Assume the mean is $E(Y)=\mu$ and the variance is $Var(Y)=\mu$. On may test this assumption as a null hypothesis against an alternative where $Var(Y)=\mu+c∗f(\mu)$ where the constant $c<0$ means underdispersion and $c>0$ means overdispersion. 
+Assume the mean is $E(Y)=\mu$ and the variance is $Var(Y)=\mu$. On may test this assumption as a null hypothesis against an alternative where $Var(Y)=\mu+c∗f(\mu)$ where the constant $c<0$ means under dispersion and $c>0$ means over dispersion. 
 
 $H_0:c=0$ vs. $H_1:c\ne 0$ and the test statistic is asymptotically standard normal under the null.
 ```{r}
